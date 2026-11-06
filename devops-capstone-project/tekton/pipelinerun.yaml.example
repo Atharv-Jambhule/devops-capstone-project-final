@@ -1,0 +1,21 @@
+# Copy to pipelinerun.yaml and replace the repository and image registry values.
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: customer-accounts-run-
+spec:
+  pipelineRef:
+    name: customer-accounts-pipeline
+  params:
+    - name: repo-url
+      value: https://github.com/Atharv-Jambhule/devops-capstone-project.git
+    - name: image
+      value: image-registry.example.com/your-project/customer-accounts:latest
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi

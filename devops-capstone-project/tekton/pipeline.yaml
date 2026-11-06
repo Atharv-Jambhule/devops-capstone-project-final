@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: customer-accounts-pipeline
+spec:
+  params:
+    - name: repo-url
+      type: string
+    - name: image
+      type: string
+  workspaces:
+    - name: shared-data
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: main
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: install-dependencies-and-test
+      runAfter: [fetch-repository]
+      taskRef:
+        name: python-checks
+      workspaces:
+        - name: source
+          workspace: shared-data
+    - name: build-image
+      runAfter: [install-dependencies-and-test]
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-data
